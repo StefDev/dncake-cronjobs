@@ -63,7 +63,7 @@ if ($argc > 1) {
       break;
 
     case "event":
-      $stmt = $dbh->prepare("SELECT ev.id, ev.title, ev.date, loc.name
+      $stmt = $dbh->prepare("SELECT ev.id, ev.title, ev.date, ev.cat, loc.name, loc.town
                              FROM dncake_events AS ev, dncake_locations AS loc
                              WHERE ev.tweet_id IS NULL
                              AND ev.location_id = loc.id
@@ -71,16 +71,16 @@ if ($argc > 1) {
                              AND ev.confirmed = 1
                              ORDER BY ev.date ASC LIMIT 1"
                            );
-      
+
       if ($stmt->execute()) {
-        
+
         $result = $stmt->fetch(PDO::FETCH_OBJ);
 
         if ($result) {
 
           // Set Twitter status
           $postfields = array(
-            "status" => sprintf("%s (%s, %s) – http://darkneuss.de/kalender/details/%s", $result->title, date("d.m.Y", strtotime($result->date)), $result->name, $result->id)
+            "status" => sprintf("%s (%s, %s) – http://darkneuss.de/k/%d #%s #%s", $result->title, date("d.m.Y", strtotime($result->date)), $result->name, $result->id, $result->cat, $result->town)
           );
 
           // Send tweet
@@ -108,7 +108,7 @@ if ($argc > 1) {
 
       }
       break;
-      
+
     case "festival":
       $stmt = $dbh->prepare("SELECT id, title, date, DATEDIFF(date, NOW()) AS days
                              FROM dncake_events
@@ -142,9 +142,9 @@ if ($argc > 1) {
 
     case "news":
       $stmt = $dbh->prepare("SELECT * FROM dncake_news WHERE id > 13 AND tweet_id IS NULL AND published = 1 ORDER BY created ASC LIMIT 1");
-      
+
       if ($stmt->execute()) {
-        
+
         $result = $stmt->fetch(PDO::FETCH_OBJ);
 
         if ($result) {
